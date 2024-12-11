@@ -1,0 +1,40 @@
+LUỒNG THƯỜNG:
+- Digi nhận thông tin từ FrontEnd (landing Page)
+- Digi Lending gửi yêu cầu tạo hồ sơ sang Model App
+- DE process các bước Check C06, AML, Oprisk, A05, Policy, Fraud, CIC (uy tín tín dụng) -> Chỉ phục vụ luồng tự động
+
+3. Collect thêm các dữ liệu tùy theo tt GTTT và CiF nhận được (Casa, CIC). (Model App process mục này và có lưu trữ DB) 
+
+4. Xác định Model và bộ câu hỏi tương ứng. Thông tin để ra được loại mô hình nào dựa vào thông tin. 
+ở Bước 3 + thông tin ng dùng nhập ở Bước 2 (B2 có loại thông tin là tự động tính/kéo hoặc do người dùng nhập vào)
+LƯU Ý: có thể ra 1 hoặc 2 mô hình. Có thẻ 1 mô hình ra 2 scoring . (phụ thuộc hoàn toàn vào thông tin lấy được khi sử dụng 2 loại giấy tờ có khớp vs nhau hay ko)
+
+5. Sau khi xác định được danh sách các câu hỏi tương ứng với mô hình, thì người dùng sẽ nhập câu trả lời
+hoặc Model App tự fill một số câu trả lời mà nó có thể kéo đc từ các nguồn khác. 
+
+6.Đoạn sử dụng Scoring 3RD -> Phụ thuộc vào chính sách. Model App sẽ append đoạn này vào luồng trên giao diện ntn ?
+3RD: mô hình chấm điểm của bên thứ 3. MSB sẽ ném thông tin của hồ sơ vào mô hình 3rd -> get về kết quả là input cho mô hình mà MSB xây dựng.
+LƯU Ý: Chưa rõ 1 trong 2 cách sau: 
+- từ bước 5. -> đưa vào DE tính toán ->  rớt luồng -> tính mô hình tiếp theo -> kết thúc rớt -> sử dụng tt từ 3rd -> continue flow
+- từ bước 5. -> đưa vào DE tính toán -> bổ sung thông tin 3RD được (kết hợp với thông tin mô hình nội bộ) -> tính toán lại 
+
+8. Segment: Mô hình phân loại nguồn thu của KH dựa vào phương pháp luận ML. -> Nguồn thu từ lương/ Owner Business/ Xác định ra nguồn thu của KH. 
+-> Quyết định là Chấm Income hay Rating hay both.
+	- Income -> ước tính thu nhập của khách hàng (value)
+	- Rating -> xếp hạng tín dụng (quan trọng nhất tác động đến được phê duyệt hay ko)
+	
+(xếp hạng gian lận (fraud) -> estimate để thiết kế bảng khi phát sinh thêm 1 loại thông tin cần chấm mới  thì ....
+
+11. Áp dụng Dung Sai và Override:
+- Dung sai: Sau khi lựa chọn Score -> DE sẽ check có áp dụng đánh giá bổ sung Dung sai hay ko -> Nếu có thì tính ra Dung_Sai_Score mới -> So sánh với Raw Score 
+-> Nếu khác thì trả ra cho Model App thực hiện tiếp (quy trình phê duyệt/ thẩm định các kiểu) -> Tích chọn các tiêu chí được dung sai và nhập mức dung sai -> Submit lên DE để tính lại
+
+- Override: Sau khi tính lại với Dung sai mới ra được tiếp RawScore2 -> Nếu có áp dụng bổ sung về Override -> DE sẽ tính ra Override_Score mới -> So sánh với RawScore2
+-> nếu khác thì trả cho Model App thực hiện tiếp  -> cũng thực hiện tương tự như Dung sai. 
+Lưu ý: Override thậm chỉ cả hạng luôn 
+
+
+Dung sai => áp dụng cho tiêu chí đơn/ kép
+Override => Áp dụng cho tiêu chí đơn/ kép hoặc cả total score
+TPC => only hỏi - trả lời
+
